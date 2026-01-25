@@ -7,7 +7,6 @@ Before running tests, make sure you have installed:
 - **Maven**
 - **Android Studio + Android SDK**
 - **Android Emulator (AVD)**
-- **Appium Server** (run manually)
 - **ADB** available in PATH *(usually: `<Android_SDK>/platform-tools`)*
 
 ---
@@ -27,27 +26,15 @@ Example path from the project root:
 ### ✅ Install app (Split APK format)
 Your app is provided as **split APKs** (base APK + config APKs), for example:
 
-- `com.epam.connect.android.apk` *(base apk)*
-- `config.en.apk`
-- `config.x86_64.apk`
-- `config.xxhdpi.apk`
+- `app.apk` *(base apk)*
+
 
 ✅ Install all split APKs to emulator with this command (run from project root):
 
 **CMD (Windows):**
 ```bash
-adb install-multiple -r ^
-  ./src/main/resources/app2/com.epam.connect.android.apk ^
-  ./src/main/resources/app2/config.en.apk ^
-  ./src/main/resources/app2/config.x86_64.apk ^
-  ./src/main/resources/app2/config.xxhdpi.apk
+adb install -r ./src/main/resources/app2/app.apk
 ```
-
-✅ Explanation:
-- `install-multiple` installs base + split APKs together
-- `-r` reinstalls the app if it already exists
-
----
 
 ### 1) Start your emulator
 Example (AVD name = `Phone`):
@@ -62,7 +49,7 @@ adb devices -l
 
 ### 3) (Optional) Verify app is installed
 ```bash
-adb shell pm list packages | findstr epam
+adb shell pm list packages | findstr bookreader
 ```
 
 ---
@@ -88,22 +75,10 @@ Phone
 ```
 ---
 
-## ✅ Step 3: Start Appium server manually
-Run Appium in terminal (default):
-```bash
-appium
-```
 
----
-
-## ✅ Step 4: Run tests
+## ✅ Step 3: Run tests
 
 ### Run from IntelliJ IDEA
 - Open `LoginOptionsTests`
 - Right click → **Run**
 
-### Run from Maven
-Run smoke suite:
-```bash
-mvn test -Dsuite=smoke
-```

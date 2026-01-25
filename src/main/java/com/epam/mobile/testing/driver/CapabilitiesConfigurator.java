@@ -24,7 +24,6 @@ public class CapabilitiesConfigurator {
                 .setPlatformName(cfg.platformName())
                 .setPlatformVersion(cfg.platformVersion())
                 .setDeviceName(cfg.localDeviceName());
-//                .setUdid(cfg.udid());
 
         if (cfg.avdName() != null && !cfg.avdName().isBlank()) {
             options.setCapability("appium:avd", cfg.avdName());

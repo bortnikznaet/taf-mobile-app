@@ -18,7 +18,6 @@ import static java.lang.String.format;
 public class DriverManager {
 
     private static final Logger LOG = LogManager.getLogger(DriverManager.class);
-//    private static final EnvironmentType ENVIRONMENT_TYPE = EnvironmentType.valueOf(ConfigurationReader.get().env().toUpperCase());
     public static AppiumDriver driver;
 
     private DriverManager() {}
@@ -85,7 +84,12 @@ public class DriverManager {
             options.setAppActivity(cfg.appActivity());
         }
 
-//        options.setCapability("appium:avd", "Phone");
+        options.setCapability("appium:uiautomator2ServerLaunchTimeout", 90000);
+        options.setCapability("appium:uiautomator2ServerInstallTimeout", 90000);
+        options.setCapability("appium:adbExecTimeout", 60000);
+        options.setCapability("appium:newCommandTimeout", 120);
+
+        options.setCapability("appium:avdArgs", "-no-snapshot-load -no-snapshot-save -no-boot-anim");
         options.setCapability("appium:avdLaunchTimeout", 180000);
         options.setCapability("appium:avdReadyTimeout", 180000);
 
@@ -113,7 +117,8 @@ public class DriverManager {
 
         String appPackage = ConfigurationReader.get().appPackage();
         if (appPackage == null || appPackage.isBlank()) {
-            appPackage = "com.epam.connect.android";
+            LOG.warn("appPackage is not set. Skip terminateApp.");
+            return;
         }
 
         try {
@@ -142,9 +147,29 @@ public class DriverManager {
 
         try {
             Runtime.getRuntime().exec(format("adb -s %s emu kill", udid));
+            waitUntilEmulatorIsDown(udid, 30);
             LOG.info("AVD was closed. udid={}", udid);
         } catch (Exception e) {
             LOG.warn("AVD was not closed. udid={}, message={}", udid, e.getMessage());
         }
+    }
+
+    private static void waitUntilEmulatorIsDown(String udid, int timeoutSeconds) {
+        long end = System.currentTimeMillis() + timeoutSeconds * 1000L;
+
+        while (System.currentTimeMillis() < end) {
+            String devices = null;
+            try {
+                devices = Runtime.getRuntime().exec(format("adb devices")).toString();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+            if (devices == null || !devices.contains(udid)) {
+                return;
+            }
+        }
+
+        LOG.warn("Emulator is still visible in adb after {} seconds. udid={}", timeoutSeconds, udid);
     }
 }

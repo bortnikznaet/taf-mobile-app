@@ -17,18 +17,24 @@ public class AppiumServiceManager {
 
     private static final Logger LOG = LogManager.getLogger(AppiumServiceManager.class);
     private static final String ERROR_LOG_LEVEL = "error";
-    private static final String KILL_NODE_COMMAND = "taskkill / F /IM node.exe";
+    private static final String KILL_NODE_COMMAND = "taskkill /F /IM node.exe";
     private static AppiumDriverLocalService appiumDriverLocalService;
 
     private AppiumServiceManager() {
     }
 
-    public static AppiumDriverLocalService getAppiumDriverLocalService(int port) {
-        if (appiumDriverLocalService == null) startService(port);
-        return appiumDriverLocalService;
+    public static void getAppiumDriverLocalService(int port) {
+        if (appiumDriverLocalService == null || !appiumDriverLocalService.isRunning()) {
+            startService(port);
+        }
     }
 
     public static void startService(int port) {
+        if (appiumDriverLocalService != null && appiumDriverLocalService.isRunning()) {
+            LOG.info("Appium server already running on {}", appiumDriverLocalService.getUrl());
+            return;
+        }
+
         makePortAvailableIfOccupied(port);
 
         appiumDriverLocalService = new AppiumServiceBuilder()
