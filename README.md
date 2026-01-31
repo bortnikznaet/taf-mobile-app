@@ -82,3 +82,35 @@ Phone
 - Open `LoginOptionsTests`
 - Right click → **Run**
 
+## ☁️ BrowserStack
+### ✅ Step 1:  BrowserStack integration
+The BrowserStack configuration is stored in:
+
+`src/main/resources/browserstack.properties`
+
+### ✅ 2) Set BrowserStack credentials
+Fill in these values in `browserstack.properties`:
+
+```properties
+browserstack.user=YOUR_BROWSERSTACK_USER
+browserstack.key=YOUR_BROWSERSTACK_ACCESS_KEY
+```
+
+### ✅ 3) Upload your app to BrowserStack
+Follow the official instructions to upload the app from your filesystem:
+
+- https://www.browserstack.com/docs/app-automate/appium/upload-app-from-filesystem
+
+After upload, you will receive an **app URL** like `bs://<app-id>`. Put it into:
+#### ✅ 4) Configure properties
+
+```properties
+browserstack.app.url=bs://YOUR_APP_ID
+```
+
+### ✅ 5) Run tests on BrowserStack
+
+```bash
+
+mvn clean test "-Denv.name=browserstack" "-Dsuite=smoke.xml"
+```

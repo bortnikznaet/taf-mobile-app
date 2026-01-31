@@ -1,6 +1,7 @@
 package com.epam.mobile.testing;
 
 import com.epam.mobile.testing.configuration.ConfigurationReader;
+import com.epam.mobile.testing.configuration.EnvironmentType;
 import com.epam.mobile.testing.driver.AppiumServiceManager;
 import com.epam.mobile.testing.driver.DriverManager;
 import io.appium.java_client.AppiumDriver;
@@ -19,6 +20,11 @@ public class BaseTest {
     @BeforeSuite(alwaysRun = true)
     public void startAppium() {
         ConfigurationReader cfg = ConfigurationReader.get();
+        if (cfg.environmentType() != EnvironmentType.LOCAL) {
+            LOG.info("Skipping local Appium server start for envType={}", cfg.environmentType());
+            return;
+        }
+
 
         LOG.info("Starting Appium server...");
         AppiumServiceManager.getAppiumDriverLocalService(cfg.appiumPort());
@@ -41,6 +47,12 @@ public class BaseTest {
 
     @AfterSuite(alwaysRun = true)
     public void stopAppium() {
+        ConfigurationReader cfg = ConfigurationReader.get();
+        if (cfg.environmentType() != EnvironmentType.LOCAL) {
+            LOG.info("Skipping local Appium shutdown for envType={}", cfg.environmentType());
+            return;
+        }
+
         DriverManager.closeEmulator();
         DriverManager.closeAppium();
     }

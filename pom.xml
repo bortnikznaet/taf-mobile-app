@@ -10,7 +10,7 @@
 
     <properties>
         <suite>smoke</suite>
-        <java.version>17.0</java.version>
+        <java.version>17</java.version>
         <source.encoding>UTF8</source.encoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>

@@ -8,6 +8,9 @@ import org.apache.logging.log4j.Logger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class CapabilitiesConfigurator {
 
@@ -43,4 +46,50 @@ public class CapabilitiesConfigurator {
 
         return options;
     }
+
+    public static UiAutomator2Options getBrowserStackCapabilities() {
+        ConfigurationReader cfg = ConfigurationReader.get();
+
+        UiAutomator2Options options = new UiAutomator2Options()
+                .setAutomationName("UiAutomator2")
+                .setPlatformName(cfg.platformName());
+
+        String deviceName = cfg.browserStackDeviceName();
+        if (deviceName != null && !deviceName.isBlank()) {
+            options.setCapability("appium:deviceName", deviceName);
+        }
+
+        String osVersion = cfg.browserStackOsVersion();
+        if (osVersion != null && !osVersion.isBlank()) {
+            options.setCapability("appium:platformVersion", osVersion);
+        }
+
+        // App (bs://...)
+        String appUrl = cfg.browserStackAppUrl();
+        if (appUrl != null && !appUrl.isBlank()) {
+            options.setApp(appUrl);
+            LOG.info("BrowserStack app capability was set: {}", appUrl);
+        }
+
+        Map<String, Object> bstackOptions = new HashMap<>();
+
+        putIfNotBlank(bstackOptions, "userName", cfg.browserStackUser());
+        putIfNotBlank(bstackOptions, "accessKey", cfg.browserStackKey());
+
+        putIfNotBlank(bstackOptions, "projectName", cfg.browserStackProject());
+        putIfNotBlank(bstackOptions, "buildName", cfg.browserStackBuild());
+        putIfNotBlank(bstackOptions, "sessionName", cfg.browserStackSessionName());
+        putIfNotBlank(bstackOptions, "appiumVersion", cfg.browserStackAppiumVersion());
+
+        options.setCapability("bstack:options", bstackOptions);
+
+        return options;
+    }
+
+    private static void putIfNotBlank(Map<String, Object> map, String key, String value) {
+        if (value != null && !value.isBlank()) {
+            map.put(key, value);
+        }
+    }
+
 }

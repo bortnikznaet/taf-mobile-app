@@ -17,6 +17,8 @@ public class ConfigurationReader {
 
     private static final String DEFAULT_CONFIG_FILE = "test.properties";
     private static final String CONFIG_FILE_SYS_PROP = "config.file";
+    private static final String ENV_NAME_SYS_PROP = "env.name";
+
     private static final Properties properties = new Properties();
     private static ConfigurationReader instance;
 
@@ -36,8 +38,24 @@ public class ConfigurationReader {
         return instance;
     }
 
+    private String resolveConfigFile() {
+        String configFile = System.getProperty(CONFIG_FILE_SYS_PROP);
+        if (configFile != null && !configFile.isBlank()) {
+            return configFile.trim();
+        }
+
+        String envName = System.getProperty(ENV_NAME_SYS_PROP);
+        if (envName != null && !envName.isBlank()) {
+            return envName.trim() + ".properties";
+        }
+
+        return DEFAULT_CONFIG_FILE;
+    }
+
+
     private void loadProperties() {
-        String configFile = System.getProperty(CONFIG_FILE_SYS_PROP, DEFAULT_CONFIG_FILE).trim();
+        String configFile = resolveConfigFile();
+
         LOG.info("Loading configuration from: {}", configFile);
 
         Path fsPath = Paths.get(configFile);
@@ -107,4 +125,56 @@ public class ConfigurationReader {
     public int appiumPort() {
         return NumberUtils.toInt(properties.getProperty("appium.port"));
     }
+
+    public String browserStackUser() {
+        return properties.getProperty("browserstack.user");
+    }
+
+    public String browserStackKey() {
+        return properties.getProperty("browserstack.key");
+    }
+
+    public String browserStackAppUrl() {
+        return properties.getProperty("browserstack.app.url");
+    }
+
+    public String browserStackDeviceName() {
+        return properties.getProperty("browserstack.device.name");
+    }
+
+    public String browserStackOsVersion() {
+        return properties.getProperty("browserstack.os.version");
+    }
+
+    public String browserStackProject() {
+        return properties.getProperty("browserstack.project");
+    }
+
+    public String browserStackBuild() {
+        return properties.getProperty("browserstack.build");
+    }
+
+    public String browserStackSessionName() {
+        return properties.getProperty("browserstack.session.name");
+    }
+
+    public String browserStackAppiumVersion() {
+        return properties.getProperty("browserstack.appium.version");
+    }
+
+    public EnvironmentType environmentType() {
+        String rawEnv = env();
+        if (rawEnv == null || rawEnv.isBlank()) {
+            LOG.warn("env.type is not set. Falling back to LOCAL");
+            return EnvironmentType.LOCAL;
+        }
+
+        try {
+            return EnvironmentType.valueOf(rawEnv.trim().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            LOG.warn("Unknown env.type='{}'. Falling back to LOCAL", rawEnv);
+            return EnvironmentType.LOCAL;
+        }
+    }
+
 }

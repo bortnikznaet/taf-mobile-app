@@ -20,7 +20,8 @@ public class DriverManager {
     private static final Logger LOG = LogManager.getLogger(DriverManager.class);
     public static AppiumDriver driver;
 
-    private DriverManager() {}
+    private DriverManager() {
+    }
 
     public static AppiumDriver getDriver() {
         if (driver == null) {
@@ -45,31 +46,19 @@ public class DriverManager {
     }
 
     private static AppiumDriver createDriver() {
-        EnvironmentType envType = resolveEnvironmentType();
+        EnvironmentType envType = ConfigurationReader.get().environmentType();
         LOG.info("Creating Appium driver for envType={}", envType);
 
         switch (envType) {
             case LOCAL:
                 return createAndroidLocalDriver();
+            case BROWSERSTACK:
+                return createAndroidBrowserStackDriver();
             default:
                 throw new IllegalArgumentException("Unsupported env: " + envType);
         }
     }
 
-    private static EnvironmentType resolveEnvironmentType() {
-        String rawEnv = ConfigurationReader.get().env();
-        if (rawEnv == null || rawEnv.isBlank()) {
-            LOG.warn("env.type is not set. Falling back to LOCAL");
-            return EnvironmentType.LOCAL;
-        }
-
-        try {
-            return EnvironmentType.valueOf(rawEnv.trim().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Unknown env.type='{}'. Falling back to LOCAL", rawEnv);
-            return EnvironmentType.LOCAL;
-        }
-    }
 
     private static AppiumDriver createAndroidLocalDriver() {
         ConfigurationReader cfg = ConfigurationReader.get();
@@ -98,6 +87,34 @@ public class DriverManager {
 
         return new AndroidDriver(serverUrl, options);
     }
+
+    private static AppiumDriver createAndroidBrowserStackDriver() {
+        ConfigurationReader cfg = ConfigurationReader.get();
+
+        UiAutomator2Options options = CapabilitiesConfigurator.getBrowserStackCapabilities()
+                .setNoReset(true);
+
+        if (cfg.appPackage() != null && !cfg.appPackage().isBlank()) {
+            options.setAppPackage(cfg.appPackage());
+        }
+        if (cfg.appActivity() != null && !cfg.appActivity().isBlank()) {
+            options.setAppActivity(cfg.appActivity());
+        }
+
+        URL serverUrl = buildBrowserStackUrl();
+        LOG.info("Connecting to BrowserStack hub: {}", serverUrl);
+
+        return new AndroidDriver(serverUrl, options);
+    }
+
+    private static URL buildBrowserStackUrl() {
+        try {
+            return new URL("https://hub-cloud.browserstack.com/wd/hub");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException("Wrong BrowserStack hub URL", e);
+        }
+    }
+
 
     private static URL buildAppiumUrl(String host, int port) {
         String safeHost = (host == null || host.isBlank()) ? "127.0.0.1" : host.trim();
