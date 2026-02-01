@@ -64,7 +64,6 @@ public class CapabilitiesConfigurator {
             options.setCapability("appium:platformVersion", osVersion);
         }
 
-        // App (bs://...)
         String appUrl = cfg.browserStackAppUrl();
         if (appUrl != null && !appUrl.isBlank()) {
             options.setApp(appUrl);
